@@ -76,14 +76,10 @@ const ShibaInuDog = ({
 
         {isFound && (
           <>
-            {/* 発見ポップアップ */}
+            {/* 発見ポップアップ
             <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-xl animate-bounce z-50 border-2 border-white/30">
-              <div className="flex items-center gap-1">
-                <span>🚀</span>
-                <span>発見！</span>
-                <span>✨</span>
-              </div>
-            </div>
+              <span>発見</span>
+            </div> */}
 
             {/* 宇宙エフェクト */}
             <div className="absolute inset-0 rounded-full">

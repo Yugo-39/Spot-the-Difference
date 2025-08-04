@@ -4,6 +4,7 @@ import HomeScreen from "./components/HomeScreen";
 import levels from "@/app/data/levels";
 import GameScreen from "@/app/components/GameScreen";
 import LevelSelectScreen from "@/app/components/LevelSelectScreen";
+
 // メインコンポーネント
 const HiddenShibaGame = () => {
   const [currentScreen, setCurrentScreen] = useState("home");
@@ -28,32 +29,34 @@ const HiddenShibaGame = () => {
     }
   }, []);
 
-  // 進捗を保存
+  // 進捗を保存（関数型更新で競合回避）
   const saveProgress = (levelIndex, time) => {
-    const newCompletedLevels = [...completedLevels];
-    if (!newCompletedLevels.includes(levelIndex)) {
-      newCompletedLevels.push(levelIndex);
-    }
+    setCompletedLevels((prevLevels) => {
+      const updatedLevels = prevLevels.includes(levelIndex)
+        ? prevLevels
+        : [...prevLevels, levelIndex];
 
-    const newBestTimes = { ...bestTimes };
-    const isNewRecord =
-      !newBestTimes[levelIndex] || time < newBestTimes[levelIndex];
-    if (isNewRecord) {
-      newBestTimes[levelIndex] = time;
-    }
+      setBestTimes((prevBest) => {
+        const isNewRecord =
+          !prevBest[levelIndex] || time < prevBest[levelIndex];
+        const updatedBest = {
+          ...prevBest,
+          [levelIndex]: isNewRecord ? time : prevBest[levelIndex],
+        };
 
-    setCompletedLevels(newCompletedLevels);
-    setBestTimes(newBestTimes);
+        localStorage.setItem(
+          "shibaGameProgress",
+          JSON.stringify({
+            completedLevels: updatedLevels,
+            bestTimes: updatedBest,
+          })
+        );
 
-    localStorage.setItem(
-      "shibaGameProgress",
-      JSON.stringify({
-        completedLevels: newCompletedLevels,
-        bestTimes: newBestTimes,
-      })
-    );
+        return updatedBest;
+      });
 
-    return isNewRecord;
+      return updatedLevels;
+    });
   };
 
   // タイマー機能
@@ -69,6 +72,7 @@ const HiddenShibaGame = () => {
 
   const handleImageLoad = () => {
     setImageLoaded(true);
+    setIsPlaying(false);
   };
 
   const handleDogClick = (dog, event) => {
@@ -80,7 +84,7 @@ const HiddenShibaGame = () => {
 
       if (newFoundDogs.length === levels[currentLevel].dogs.length) {
         setTimeout(() => {
-          const isNewRecord = saveProgress(currentLevel, timer);
+          saveProgress(currentLevel, timer);
           setShowSuccess(true);
           setIsPlaying(false);
         }, 500);
@@ -94,7 +98,7 @@ const HiddenShibaGame = () => {
     const y = ((event.clientY - rect.top) / rect.height) * 100;
 
     const newWrongClick = { id: Date.now(), x, y };
-    setWrongClicks([...wrongClicks, newWrongClick]);
+    setWrongClicks((prev) => [...prev, newWrongClick]);
 
     setTimeout(() => {
       setWrongClicks((prev) =>
@@ -103,8 +107,8 @@ const HiddenShibaGame = () => {
     }, 1500);
   };
 
-  const startGame = () => {
-    setIsPlaying(true);
+  const resetGame = () => {
+    setIsPlaying(false);
     setFoundDogs([]);
     setTimer(0);
     setShowSuccess(false);
@@ -112,16 +116,24 @@ const HiddenShibaGame = () => {
     setImageLoaded(false);
   };
 
+  // 実際にゲームを開始する関数
+  const startGame = () => {
+    setIsPlaying(true); // ← true でゲーム開始
+  };
+
   const selectLevel = (levelIndex) => {
     setCurrentLevel(levelIndex);
     setCurrentScreen("game");
-    startGame();
+
+    resetGame();
   };
 
   const nextLevel = () => {
     if (currentLevel < levels.length - 1) {
-      setCurrentLevel(currentLevel + 1);
-      startGame();
+      setCurrentLevel((prev) => prev + 1);
+      resetGame();
+    } else {
+      goToHome();
     }
   };
 
@@ -134,8 +146,9 @@ const HiddenShibaGame = () => {
   };
 
   const isNewRecord =
-    bestTimes[currentLevel] && timer < bestTimes[currentLevel];
+    !bestTimes[currentLevel] || timer < bestTimes[currentLevel];
 
+  // ホーム画面
   if (currentScreen === "home") {
     return (
       <HomeScreen
@@ -144,28 +157,28 @@ const HiddenShibaGame = () => {
         onStartGame={() => {
           setCurrentLevel(0);
           setCurrentScreen("game");
-          startGame();
+          // startGame();
+          resetGame();
         }}
         onLevelSelect={() => setCurrentScreen("levelSelect")}
       />
     );
   }
 
+  // レベル選択画面
   if (currentScreen === "levelSelect") {
     return (
       <LevelSelectScreen
         levels={levels}
         completedLevels={completedLevels}
         bestTimes={bestTimes}
-        onSelectLevel={(index) => {
-          setCurrentLevel(index);
-          setCurrentScreen("game");
-        }}
-        onBack={() => setCurrentScreen("home")} // ← 戻るボタンでホームへ
+        onSelectLevel={selectLevel} // ← startGame()呼ぶように修正済み
+        onBack={() => setCurrentScreen("home")}
       />
     );
   }
 
+  // ゲーム画面
   return (
     <GameScreen
       level={{ ...levels[currentLevel], index: currentLevel }}

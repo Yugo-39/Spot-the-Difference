@@ -100,7 +100,7 @@ const GameScreen = ({
               <div className="text-center">
                 <Camera className="w-16 h-16 text-gray-400 animate-pulse mx-auto mb-4" />
                 <p className="text-gray-600 text-lg">
-                  宇宙を読み込んでいます...
+                  画像を読み込んでいます...
                 </p>
               </div>
             </div>
@@ -127,7 +127,7 @@ const GameScreen = ({
                   <span className="font-bold text-purple-500">
                     {level.dogs.length}匹
                   </span>
-                  の宇宙柴犬が隠れています！
+                  の柴犬が隠れています！
                 </p>
                 <p className="text-sm text-gray-600 mb-6">
                   星々の間を探索して、全部見つけてくださいね 🔍
@@ -175,14 +175,13 @@ const GameScreen = ({
           {/* 成功オーバーレイ */}
           {showSuccess && (
             <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-yellow-500/20 backdrop-blur-sm flex items-center justify-center z-50">
-              <div className="bg-white/95 backdrop-blur p-8 rounded-2xl text-center transform scale-110 animate-bounce shadow-2xl border border-white/20">
+              <div className="bg-white/95 backdrop-blur p-8 rounded-2xl text-center transform scale-110 shadow-2xl border border-white/20">
                 <div className="mb-6">
-                  <div className="text-6xl mb-4">🎉</div>
-                  <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-green-500 to-yellow-500 bg-clip-text text-transparent">
+                  <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
                     ミッション完了！
                   </h2>
                   <p className="text-xl mb-2 text-gray-700">
-                    全ての宇宙柴犬を発見しました！
+                    全ての柴犬を発見しました！
                   </p>
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <Clock className="w-5 h-5 text-gray-600" />
@@ -209,7 +208,7 @@ const GameScreen = ({
                   {level.index < 4 && (
                     <button
                       onClick={onNextLevel}
-                      className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg flex items-center gap-2"
+                      className="bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 hover:from-red-600 hover:via-purple-600 hover:to-blue-600 text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg flex items-center gap-2"
                     >
                       次の宇宙へ <ChevronRight className="w-5 h-5" />
                     </button>
