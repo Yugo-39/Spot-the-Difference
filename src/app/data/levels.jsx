@@ -1,6 +1,6 @@
 const levels = [
   {
-    name: "月面基地",
+    name: "地球",
     backgroundImage:
       "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=1200&h=800&fit=crop",
     difficulty: "かんたん",
