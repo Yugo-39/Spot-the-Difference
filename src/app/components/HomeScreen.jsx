@@ -5,6 +5,7 @@ export default function HomeScreen({
   totalLevels = 0,
   onStartGame = () => {},
   onLevelSelect = () => {},
+  onResetProgress = () => {},
 }) {
   const achievementRate =
     totalLevels > 0 ? Math.round((completedLevels / totalLevels) * 100) : 0;
@@ -108,6 +109,17 @@ export default function HomeScreen({
               <p className="text-sm opacity-80">達成率</p>
             </div>
           </div>
+          {/* リセットボタン */}
+          {completedLevels > 0 && (
+            <div className="mt-6 pt-4 border-t border-white/20">
+              <button
+                onClick={onResetProgress}
+                className="w-full py-3 text-sm font-bold text-red-300 border-2 border-red-300/50 rounded-lg bg-red-500/10 hover:bg-red-500/20 hover:border-red-300 transition-all duration-200 hover:scale-105"
+              >
+                🗑️ データをリセット
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

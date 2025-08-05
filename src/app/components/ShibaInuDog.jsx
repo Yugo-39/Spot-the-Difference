@@ -1,10 +1,39 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 const ShibaInuDog = ({
   dog = { x: 0, y: 0, size: 40 },
   isFound = false,
   onClick = () => {},
 }) => {
+  const audioRef = useRef(null);
+
+  // 音声を事前読み込み
+  useEffect(() => {
+    audioRef.current = new Audio("/sounds/dog.mp3"); // public/sounds/dog.mp3 に配置
+    audioRef.current.volume = 0.3;
+    audioRef.current.preload = "auto";
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  // 犬クリック時の処理
+  const handleDogClick = (e) => {
+    onClick(e); // 元のクリック処理（座標判定など）
+
+    // 音を鳴らす
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0; // 最初から
+      audioRef.current
+        .play()
+        .catch((err) => console.log("音声再生エラー:", err));
+    }
+  };
+
   return (
     <div
       className={`absolute cursor-pointer transition-all duration-700 ease-out ${
@@ -19,7 +48,7 @@ const ShibaInuDog = ({
           ? "scale(1.5) translateY(-15px)"
           : "scale(1) rotate(0deg)",
       }}
-      onClick={onClick}
+      onClick={handleDogClick}
     >
       <div className="relative w-full h-full group">
         {/* 宇宙柴犬アバター */}
@@ -38,7 +67,6 @@ const ShibaInuDog = ({
             opacity: isFound ? 1 : 0.75,
           }}
         >
-          {/* 柴犬の絵文字/アイコン */}
           <div
             className="absolute inset-0 flex items-center justify-center transition-all duration-700"
             style={{
@@ -51,61 +79,33 @@ const ShibaInuDog = ({
               src="images/dog3.jpg"
               alt="柴犬"
               style={{
-                width: `${dog.size * 0.6}px`,
-                height: `${dog.size * 0.6}px`,
+                width: `${dog.size * 0.45}px`,
+                height: `${dog.size * 0.45}px`,
                 objectFit: "contain",
-                transition: "transform 0.3s ease",
+                transition: "transform 0.3s ease, filter 0.3s ease",
+                opacity: isFound ? 1 : 0.6,
+                filter: isFound
+                  ? "brightness(1.3) saturate(1.4)"
+                  : "brightness(0.5) contrast(0.8) saturate(0.4)",
               }}
               className={isFound ? "scale-110" : ""}
             />
           </div>
-
-          {/* 宇宙ヘルメットエフェクト */}
-          <div
-            className="absolute inset-1 rounded-full border-2 transition-all duration-700"
-            style={{
-              borderColor: isFound
-                ? "rgba(255,255,255,0.8)"
-                : "rgba(255,255,255,0.2)",
-              background: isFound
-                ? "radial-gradient(circle, rgba(255,255,255,0.1) 30%, transparent 70%)"
-                : "radial-gradient(circle, rgba(255,255,255,0.05) 30%, transparent 70%)",
-            }}
-          />
         </div>
 
+        {/* 見つかった時のエフェクト */}
         {isFound && (
-          <>
-            {/* 発見ポップアップ
-            <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-xl animate-bounce z-50 border-2 border-white/30">
-              <span>発見</span>
-            </div> */}
-
-            {/* 宇宙エフェクト */}
-            <div className="absolute inset-0 rounded-full">
-              {/* キラキラエフェクト */}
-              <div className="absolute -top-2 -right-2 text-yellow-300 text-xl animate-pulse">
-                ✨
-              </div>
-              <div className="absolute -bottom-2 -left-2 text-blue-300 text-lg animate-pulse delay-300">
-                ⭐
-              </div>
-              <div className="absolute -top-2 -left-2 text-purple-300 text-sm animate-pulse delay-500">
-                🌟
-              </div>
-              <div className="absolute -bottom-2 -right-2 text-pink-300 text-lg animate-pulse delay-700">
-                💫
-              </div>
-            </div>
-
-            {/* 宇宙塵エフェクト */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-400/20 via-blue-400/20 to-indigo-400/20 animate-pulse"></div>
-          </>
-        )}
-
-        {/* ホバーエフェクト */}
-        {!isFound && (
-          <div className="absolute inset-0 rounded-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="absolute w-16 h-16 border-2 border-yellow-400/50 rounded-full animate-ping"></div>
+            <div
+              className="absolute w-20 h-20 border-2 border-orange-400/30 rounded-full animate-ping"
+              style={{ animationDelay: "0.2s" }}
+            ></div>
+            <div
+              className="absolute w-24 h-24 border-2 border-red-400/20 rounded-full animate-ping"
+              style={{ animationDelay: "0.4s" }}
+            ></div>
+          </div>
         )}
       </div>
     </div>

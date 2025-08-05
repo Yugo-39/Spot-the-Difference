@@ -220,10 +220,10 @@ const GameScreen = ({
         </div>
 
         {/* ヒントセクション */}
-        {isPlaying && (
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-t border-indigo-200 flex-shrink-0">
-            {/* ヒント表示切り替えボタン */}
-            <div className="p-3 text-center border-b border-indigo-100">
+        {/* {isPlaying && (
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-t border-indigo-200 flex-shrink-0"> */}
+        {/* ヒント表示切り替えボタン */}
+        {/* <div className="p-3 text-center border-b border-indigo-100">
               <button
                 onClick={toggleHints}
                 className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-bold py-2 px-4 rounded-xl transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 mx-auto text-sm"
@@ -245,10 +245,10 @@ const GameScreen = ({
                   <Eye className="w-3 h-3" />
                 )}
               </button>
-            </div>
+            </div> */}
 
-            {/* ヒント内容 */}
-            {showHints && (
+        {/* ヒント内容 */}
+        {/* {showHints && (
               <div className="p-4 animate-in slide-in-from-top-2 duration-300 max-h-48 overflow-y-auto">
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2 mb-3">
@@ -292,9 +292,9 @@ const GameScreen = ({
                   )}
                 </div>
               </div>
-            )}
-          </div>
-        )}
+            )} */}
+        {/* </div>
+        )} */}
       </div>
     </div>
   );

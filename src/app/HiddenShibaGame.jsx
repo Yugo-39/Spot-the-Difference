@@ -19,9 +19,6 @@ const HiddenShibaGame = () => {
   const [completedLevels, setCompletedLevels] = useState([]);
   const [bestTimes, setBestTimes] = useState({});
 
-  // 開発環境でのみデバッグ情報を表示
-  // const isDevelopment = process.env.NODE_ENV === "development";
-
   // ローカルストレージから進捗を読み込む
   useEffect(() => {
     const savedProgress = localStorage.getItem("shibaGameProgress");
@@ -72,6 +69,27 @@ const HiddenShibaGame = () => {
 
       return updatedLevels;
     });
+  };
+
+  // 進捗データをリセット
+  const resetProgress = () => {
+    if (
+      window.confirm(
+        "本当に全ての進捗データをリセットしますか？\nこの操作は取り消せません。"
+      )
+    ) {
+      try {
+        localStorage.removeItem("shibaGameProgress");
+        setCompletedLevels([]);
+        setBestTimes({});
+        alert("進捗データがリセットされました！");
+      } catch (error) {
+        if (isDevelopment) {
+          console.error("進捗データのリセットエラー:", error);
+        }
+        alert("リセット中にエラーが発生しました。");
+      }
+    }
   };
 
   // タイマー機能
@@ -160,19 +178,10 @@ const HiddenShibaGame = () => {
   const isNewRecord =
     !bestTimes[currentLevel] || timer < bestTimes[currentLevel];
 
-  // 開発環境でのみデバッグ情報を表示
-  // const debugInfo = isDevelopment && (
-  //   <div className="fixed top-0 left-0 bg-black/80 text-white p-2 text-xs z-50 font-mono">
-  //     Screen: {currentScreen} | Playing: {isPlaying.toString()} | ImageLoaded:{" "}
-  //     {imageLoaded.toString()} | Success: {showSuccess.toString()}
-  //   </div>
-  // );
-
   // ホーム画面
   if (currentScreen === "home") {
     return (
       <>
-        {/* {debugInfo} */}
         <HomeScreen
           completedLevels={completedLevels.length}
           totalLevels={levels.length}
@@ -184,6 +193,7 @@ const HiddenShibaGame = () => {
           onLevelSelect={() => {
             setCurrentScreen("levelSelect");
           }}
+          onResetProgress={resetProgress}
         />
       </>
     );
@@ -193,7 +203,6 @@ const HiddenShibaGame = () => {
   if (currentScreen === "levelSelect") {
     return (
       <>
-        {debugInfo}
         <LevelSelectScreen
           levels={levels}
           completedLevels={completedLevels}
@@ -208,7 +217,6 @@ const HiddenShibaGame = () => {
   // ゲーム画面
   return (
     <>
-      {/* {debugInfo} */}
       <GameScreen
         level={{ ...levels[currentLevel], index: currentLevel }}
         foundDogs={foundDogs}
