@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import HomeScreen from "./components/HomeScreen";
+import HomeScreen from "../components/HomeScreen";
 import levels from "@/app/data/levels";
 import GameScreen from "@/app/components/GameScreen";
 import LevelSelectScreen from "@/app/components/LevelSelectScreen";
