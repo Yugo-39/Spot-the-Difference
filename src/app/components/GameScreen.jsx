@@ -14,13 +14,18 @@ import {
   EyeOff,
   ChevronDown,
   ChevronUp,
+  Heart,
+  Sparkles,
+  Search,
+  PawPrint,
+  Dog,
 } from "lucide-react";
-import { useState } from "react";
-import ShibaInuDog from "@/app/components/ShibaInuDog";
-
-// ゲーム画面コンポーネント
-const GameScreen = ({
-  level = { dogs: [], name: "", index: 0 },
+import { useState, useEffect } from "react";
+import CamouflageShibaInuDog from "@/app/components/CamouflageShibaInuDog";
+import { dogBreeds } from "@/app/data/dogBreeds";
+// カモフラージュ対応ゲーム画面コンポーネント
+const CamouflageGameScreen = ({
+  level = { dogs: [], name: "", index: 0, backgroundType: "forest" },
   foundDogs = [],
   timer = 0,
   isPlaying = false,
@@ -36,6 +41,114 @@ const GameScreen = ({
   onNextLevel = () => {},
 }) => {
   const [showHints, setShowHints] = useState(false);
+  const [encouragementLevel, setEncouragementLevel] = useState(0);
+  const [showEncouragement, setShowEncouragement] = useState(false);
+  const [encouragementMessage, setEncouragementMessage] = useState("");
+  const [lastFoundTime, setLastFoundTime] = useState(0);
+  const [showPulse, setShowPulse] = useState(false);
+  const breedMap = Object.fromEntries(dogBreeds.map((b) => [b.id, b]));
+  const resolvedDogs = level.dogs.map((d) => ({
+    ...d,
+    image: breedMap[d.breedId]?.image, // ここで画像を入れる
+  }));
+
+  // 🔍 カモフラージュ特有の機能
+  const [searchMode, setSearchMode] = useState("normal"); // normal, thermal, magnify
+  const [showSearchTip, setShowSearchTip] = useState(false);
+
+  // 🎯 応援メッセージ（カモフラージュ版）
+  const camouflageEncouragementMessages = [
+    {
+      time: 15,
+      level: 1,
+      messages: [
+        "隠れ上手な柴犬たちですね！👀",
+        "よく観察すれば必ず見つかります 🔍",
+        "背景に溶け込んでいるかも... ✨",
+        "小さな違いに注目してみて 💡",
+      ],
+      icon: "🕵️",
+    },
+    {
+      time: 30,
+      level: 2,
+      messages: [
+        "マウスを動かすと見えやすくなるかも... 🌊",
+        "影の部分をじっくりチェック 🔍",
+        "色や形の微妙な違いを探して 🎨",
+        "耳を澄ませて、音のヒントも... 🎵",
+      ],
+      icon: "💡",
+    },
+    {
+      time: 50,
+      level: 3,
+      messages: [
+        "素晴らしい集中力です！もう少し 🌟",
+        "きっとすぐそこに隠れてます ⭐",
+        "プロの探偵みたいですね 🔍",
+        "最後まで諦めないで！応援してます ❤️",
+      ],
+      icon: "🏆",
+    },
+  ];
+
+  // 応援システムのタイマー管理（カモフラージュ版）
+  useEffect(() => {
+    if (!isPlaying || showSuccess) {
+      setEncouragementLevel(0);
+      setShowEncouragement(false);
+      setLastFoundTime(timer);
+      setShowPulse(false);
+      setShowSearchTip(false);
+      return;
+    }
+
+    const timeSinceLastFound = timer - lastFoundTime;
+
+    // 検索のヒント表示
+    if (timeSinceLastFound >= 20 && !showSearchTip) {
+      setShowSearchTip(true);
+    }
+
+    camouflageEncouragementMessages.forEach((encourage, index) => {
+      if (timeSinceLastFound >= encourage.time && encouragementLevel <= index) {
+        setEncouragementLevel(index + 1);
+
+        const randomMessage =
+          encourage.messages[
+            Math.floor(Math.random() * encourage.messages.length)
+          ];
+
+        setEncouragementMessage(`${encourage.icon} ${randomMessage}`);
+        setShowEncouragement(true);
+
+        setTimeout(() => {
+          setShowEncouragement(false);
+        }, 4000); // カモフラージュは少し長めに表示
+
+        if (index === 2) {
+          setShowPulse(true);
+        }
+      }
+    });
+  }, [
+    timer,
+    isPlaying,
+    showSuccess,
+    lastFoundTime,
+    encouragementLevel,
+    showSearchTip,
+  ]);
+
+  // 柴犬発見時の処理
+  useEffect(() => {
+    if (foundDogs.length > 0) {
+      setLastFoundTime(timer);
+      setEncouragementLevel(0);
+      setShowPulse(false);
+    }
+  }, [foundDogs.length, timer]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -49,15 +162,62 @@ const GameScreen = ({
       .map((dog, index) => ({ hint: dog.hint, index: index + 1 }));
   };
 
-  const toggleHints = () => {
-    setShowHints(!showHints);
+  const getCurrentHint = () => {
+    const remainingDogs = level.dogs.filter(
+      (dog) => !foundDogs.includes(dog.id)
+    );
+    if (remainingDogs.length > 0) {
+      return remainingDogs[0].hint;
+    }
+    return "";
   };
+
+  // 🎨 背景タイプ別のテーマカラー
+  const getThemeColors = () => {
+    const themes = {
+      forest: {
+        primary: "from-green-600 via-emerald-600 to-teal-700",
+        accent: "from-green-100 to-emerald-100",
+        text: "text-green-700",
+      },
+      desert: {
+        primary: "from-yellow-600 via-orange-600 to-red-700",
+        accent: "from-yellow-100 to-orange-100",
+        text: "text-orange-700",
+      },
+      snow: {
+        primary: "from-blue-600 via-cyan-600 to-purple-700",
+        accent: "from-blue-100 to-cyan-100",
+        text: "text-blue-700",
+      },
+      library: {
+        primary: "from-amber-600 via-yellow-600 to-orange-700",
+        accent: "from-amber-100 to-yellow-100",
+        text: "text-amber-700",
+      },
+      night: {
+        primary: "from-purple-600 via-indigo-600 to-blue-700",
+        accent: "from-purple-100 to-indigo-100",
+        text: "text-purple-700",
+      },
+      watercolor: {
+        primary: "from-pink-600 via-purple-600 to-indigo-700",
+        accent: "from-pink-100 to-purple-100",
+        text: "text-pink-700",
+      },
+    };
+    return themes[level.backgroundType] || themes.forest;
+  };
+
+  const themeColors = getThemeColors();
 
   return (
     <div className="w-full h-screen flex flex-col">
       <div className="bg-white flex-1 flex flex-col overflow-hidden">
-        {/* ゲームヘッダー */}
-        <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 text-white p-4 shadow-lg">
+        {/* 🏆 ゲームヘッダー（テーマカラー対応） */}
+        <div
+          className={`bg-gradient-to-r ${themeColors.primary} text-white p-4 shadow-lg`}
+        >
           <div className="flex items-center justify-between mb-2">
             <button
               onClick={onGoHome}
@@ -65,7 +225,15 @@ const GameScreen = ({
             >
               <Home className="w-5 h-5" />
             </button>
-            <div className="w-11 h-11"></div>
+            {/* 🔍 検索モード切替（カモフラージュ特有） */}
+            {showSearchTip && (
+              <div className="flex gap-2">
+                <div className="bg-white/20 backdrop-blur px-3 py-1 rounded-lg text-sm">
+                  <Search className="w-4 h-4 inline mr-1" />
+                  マウスを動かして探索
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2 bg-white/20 backdrop-blur px-4 py-2 rounded-xl">
@@ -87,6 +255,17 @@ const GameScreen = ({
           </div>
         </div>
 
+        {/* 📱 応援メッセージ表示エリア */}
+        {showEncouragement && isPlaying && (
+          <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 text-white p-3 text-center animate-bounce shadow-lg border-b-2 border-white/30">
+            <div className="flex items-center justify-center gap-2">
+              <Heart className="w-5 h-5 text-red-200 animate-pulse" />
+              <span className="font-bold text-lg">{encouragementMessage}</span>
+              <Sparkles className="w-5 h-5 text-yellow-200 animate-spin" />
+            </div>
+          </div>
+        )}
+
         <div className="relative flex-1 min-h-0 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
           <img
             src={level.backgroundImage}
@@ -99,59 +278,72 @@ const GameScreen = ({
             <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
               <div className="text-center">
                 <Camera className="w-16 h-16 text-gray-400 animate-pulse mx-auto mb-4" />
-                <p className="text-gray-600 text-lg">
-                  画像を読み込んでいます...
+                <p className="text-gray-600 text-lg flex ">
+                  <Dog />
+                  ローディング中...
+                  <PawPrint />
+                  <PawPrint />
+                  <PawPrint />
                 </p>
               </div>
             </div>
           )}
 
-          {/* ゲーム開始オーバーレイ */}
+          {/* 🚀 ゲーム開始オーバーレイ */}
           {!isPlaying && !showSuccess && imageLoaded && (
             <div className="absolute inset-0 bg-gradient-to-br from-black/70 to-black/50 backdrop-blur-sm flex items-center justify-center z-50">
               <div className="bg-white/95 backdrop-blur p-8 rounded-2xl text-center max-w-md shadow-2xl border border-white/20">
                 <div className="mb-6">
-                  <div className="text-6xl mb-4">🚀</div>
-                  <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
+                  <div className="text-6xl mb-4">🕵️‍♀️</div>
+                  <h2
+                    className={`text-3xl font-bold mb-2 bg-gradient-to-r ${themeColors.primary} bg-clip-text text-transparent`}
+                  >
                     レベル {level.index + 1}
                   </h2>
                   <h3 className="text-xl font-semibold text-gray-700 mb-2">
                     {level.name}
                   </h3>
-                  <div className="inline-block bg-gradient-to-r from-purple-100 to-blue-100 px-3 py-1 rounded-full text-sm font-medium text-purple-700">
+                  <div
+                    className={`inline-block bg-gradient-to-r ${themeColors.accent} px-3 py-1 rounded-full text-sm font-medium ${themeColors.text}`}
+                  >
                     {level.difficulty}
                   </div>
                 </div>
                 <p className="mb-2 text-gray-700">
-                  この宇宙空間に
+                  この場所に
                   <span className="font-bold text-purple-500">
                     {level.dogs.length}匹
                   </span>
-                  の柴犬が隠れています！
+                  の柴犬が巧妙に隠れています！
                 </p>
-                <p className="text-sm text-gray-600 mb-6">
-                  星々の間を探索して、全部見つけてくださいね 🔍
+                <p className="text-sm text-gray-600 mb-4">
+                  背景に溶け込んでいるので、じっくり観察してね 🔍
+                </p>
+                <p className="text-xs text-amber-600 mb-6 font-medium">
+                  💡 ヒント: マウスを動かすと見つけやすくなるよ
                 </p>
                 <button
                   onClick={onStartGame}
-                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-bold py-4 px-8 rounded-xl transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 mx-auto"
+                  className={`bg-gradient-to-r ${themeColors.primary} hover:opacity-90 text-white font-bold py-4 px-8 rounded-xl transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 mx-auto`}
                 >
-                  <Play className="w-5 h-5" />
-                  探索開始
+                  <Search className="w-5 h-5" />
+                  探偵開始
                 </button>
               </div>
             </div>
           )}
 
-          {/* ゲームエリア */}
+          {/* 🎮 カモフラージュゲームエリア */}
           {imageLoaded && isPlaying && (
             <div className="relative w-full h-full" onClick={onWrongClick}>
-              {level.dogs.map((dog) => (
-                <ShibaInuDog
+              {resolvedDogs.map((dog) => (
+                <CamouflageShibaInuDog
                   key={dog.id}
                   dog={dog}
+                  backgroundType={level.backgroundType}
                   isFound={foundDogs.includes(dog.id)}
                   onClick={(e) => onDogClick(dog, e)}
+                  showPulse={/* 必要なら */ false}
                 />
               ))}
 
@@ -172,16 +364,19 @@ const GameScreen = ({
             </div>
           )}
 
-          {/* 成功オーバーレイ */}
+          {/* 🎉 成功オーバーレイ */}
           {showSuccess && (
             <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-yellow-500/20 backdrop-blur-sm flex items-center justify-center z-50">
               <div className="bg-white/95 backdrop-blur p-8 rounded-2xl text-center transform scale-110 shadow-2xl border border-white/20">
                 <div className="mb-6">
-                  <h2 className="text-4xl font-bold mb-2 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
-                    ミッション完了！
+                  <div className="text-6xl mb-4">🎉</div>
+                  <h2
+                    className={`text-4xl font-bold mb-2 bg-gradient-to-r ${themeColors.primary} bg-clip-text text-transparent`}
+                  >
+                    探偵ミッション完了！
                   </h2>
                   <p className="text-xl mb-2 text-gray-700">
-                    全ての柴犬を発見しました！
+                    隠れていた全ての柴犬を発見しました！
                   </p>
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <Clock className="w-5 h-5 text-gray-600" />
@@ -190,12 +385,19 @@ const GameScreen = ({
                     </span>
                   </div>
                   {isNewRecord && (
-                    <div className="bg-gradient-to-r from-purple-100 to-pink-100 px-4 py-2 rounded-full mb-4">
-                      <span className="text-purple-700 font-bold">
+                    <div
+                      className={`bg-gradient-to-r ${themeColors.accent} px-4 py-2 rounded-full mb-4`}
+                    >
+                      <span className={`${themeColors.text} font-bold`}>
                         🏆 新記録達成！
                       </span>
                     </div>
                   )}
+                  <div className="bg-gradient-to-r from-green-100 to-emerald-100 px-4 py-2 rounded-full mb-4">
+                    <span className="text-green-700 font-bold">
+                      🕵️‍♀️ 素晴らしい観察力です！
+                    </span>
+                  </div>
                 </div>
                 <div className="flex gap-4 justify-center">
                   <button
@@ -205,12 +407,12 @@ const GameScreen = ({
                     <Home className="w-5 h-5" />
                     ホーム
                   </button>
-                  {level.index < 4 && (
+                  {level.index < 5 && (
                     <button
                       onClick={onNextLevel}
-                      className="bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 hover:from-red-600 hover:via-purple-600 hover:to-blue-600 text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg flex items-center gap-2"
+                      className={`bg-gradient-to-r ${themeColors.primary} hover:opacity-90 text-white font-bold py-3 px-6 rounded-xl transition-all transform hover:scale-105 shadow-lg flex items-center gap-2`}
                     >
-                      次の宇宙へ <ChevronRight className="w-5 h-5" />
+                      次の場所へ <ChevronRight className="w-5 h-5" />
                     </button>
                   )}
                 </div>
@@ -219,85 +421,25 @@ const GameScreen = ({
           )}
         </div>
 
-        {/* ヒントセクション */}
-        {/* {isPlaying && (
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-t border-indigo-200 flex-shrink-0"> */}
-        {/* ヒント表示切り替えボタン */}
-        {/* <div className="p-3 text-center border-b border-indigo-100">
-              <button
-                onClick={toggleHints}
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-bold py-2 px-4 rounded-xl transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 mx-auto text-sm"
-              >
-                <Lightbulb className="w-4 h-4" />
-                <span>
-                  {showHints
-                    ? "ヒントを隠す"
-                    : `ヒントを見る (${getRemainingHints().length})`}
-                </span>
-                {showHints ? (
-                  <ChevronUp className="w-3 h-3" />
-                ) : (
-                  <ChevronDown className="w-3 h-3" />
-                )}
-                {showHints ? (
-                  <EyeOff className="w-3 h-3" />
-                ) : (
-                  <Eye className="w-3 h-3" />
-                )}
-              </button>
-            </div> */}
-
-        {/* ヒント内容 */}
-        {/* {showHints && (
-              <div className="p-4 animate-in slide-in-from-top-2 duration-300 max-h-48 overflow-y-auto">
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 mb-3">
-                    <div className="text-2xl">🛸</div>
-                    <p className="text-base font-bold text-gray-700">
-                      宇宙探索のヒント
-                    </p>
-                  </div>
-
-                  {getRemainingHints().length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-w-full mx-auto">
-                      {getRemainingHints().map((item, index) => (
-                        <div
-                          key={index}
-                          className="bg-gradient-to-br from-white to-indigo-50 p-3 rounded-lg shadow-md border border-indigo-200/50 hover:shadow-lg transition-all hover:scale-105"
-                        >
-                          <div className="flex items-center gap-2 mb-1">
-                            <div className="w-5 h-5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-full text-xs font-bold flex items-center justify-center">
-                              {foundDogs.length + index + 1}
-                            </div>
-                            <span className="text-xs text-gray-500 font-medium">
-                              未発見
-                            </span>
-                          </div>
-                          <p className="text-xs font-medium text-gray-700 leading-relaxed">
-                            {item.hint}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="bg-gradient-to-r from-green-100 to-emerald-100 p-4 rounded-xl border border-green-200">
-                      <div className="text-3xl mb-1">🎯</div>
-                      <p className="text-green-700 font-bold text-base">
-                        全ての宇宙柴犬を発見済みです！
-                      </p>
-                      <p className="text-green-600 text-xs mt-1">
-                        素晴らしい探索能力です 🌟
-                      </p>
-                    </div>
-                  )}
-                </div>
+        {/* 💡 特別ヒント表示（応援システムの一部） */}
+        {isPlaying &&
+          encouragementLevel >= 2 &&
+          getRemainingHints().length > 0 && (
+            <div
+              className={`bg-gradient-to-r ${themeColors.accent} border-t border-yellow-200 p-4 text-center`}
+            >
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Lightbulb className="w-5 h-5 text-yellow-600" />
+                <span className="font-bold text-yellow-800">探偵のヒント</span>
               </div>
-            )} */}
-        {/* </div>
-        )} */}
+              <p className={`${themeColors.text} font-medium`}>
+                {getCurrentHint()}
+              </p>
+            </div>
+          )}
       </div>
     </div>
   );
 };
 
-export default GameScreen;
+export default CamouflageGameScreen;

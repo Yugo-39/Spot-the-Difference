@@ -1,0 +1,65 @@
+export const dogBreeds = [
+  {
+    id: "aka",
+    name: "赤柴",
+    rarity: "common",
+    weight: 50, // 出現率 50%
+    image: "/images/dogs/aka.jpg",
+    silhouette: "/images/dogs/silhouette.png",
+    hint: "木陰が好き",
+  },
+  {
+    id: "kuro",
+    name: "黒柴",
+    rarity: "uncommon",
+    weight: 25, // 出現率 25%
+    image: "/images/dogs/kuro.png",
+    silhouette: "/images/dogs/silhouette.png",
+    hint: "暗い場所に紛れる",
+  },
+  {
+    id: "mame",
+    name: "豆柴",
+    rarity: "rare",
+    weight: 10, // 出現率 10%
+    image: "/images/dogs/mame.png",
+    silhouette: "/images/dogs/silhouette.png",
+    hint: "小さくて見落としがち",
+  },
+  {
+    id: "siro",
+    name: "白柴",
+    rarity: "rare",
+    weight: 5,
+    image: "/images/dogs/siro.png",
+    silhouette: "/images/dogs/silhouette.png",
+    hint: "ホワイトカラー",
+  },
+  {
+    id: "goma",
+    name: "胡麻柴",
+    rarity: "rare",
+    weight: 5,
+    image: "/images/dogs/goma.png",
+    silhouette: "/images/dogs/silhouette.png",
+    hint: "景色に溶け込む",
+  },
+  {
+    id: "gold",
+    name: "金柴",
+    rarity: "rare",
+    weight: 3,
+    image: "/images/dogs/gold.png",
+    silhouette: "/images/dogs/silhouette.png",
+    hint: "金に光ってる",
+  },
+  {
+    id: "rainbow",
+    name: "虹柴",
+    rarity: "rare",
+    weight: 2,
+    image: "/images/dogs/rainbow.png",
+    silhouette: "/images/dogs/silhouette.png",
+    hint: "カラフル",
+  },
+];

@@ -6,6 +6,7 @@ export default function HomeScreen({
   onStartGame = () => {},
   onLevelSelect = () => {},
   onResetProgress = () => {},
+  onOpenDogDex = () => {},
 }) {
   const achievementRate =
     totalLevels > 0 ? Math.round((completedLevels / totalLevels) * 100) : 0;
@@ -16,14 +17,14 @@ export default function HomeScreen({
 
       <style jsx>{`
         .responsive-bg {
-          background-image: url("/images/img-mobile.png");
+          background-image: url("/images/home/img-mobile.png");
           background-size: cover;
           background-position: center;
         }
 
         @media (min-width: 1024px) {
           .responsive-bg {
-            background-image: url("/images/img-desktop.png");
+            background-image: url("/images/home/img-desktop.png");
           }
         }
       `}</style>
@@ -42,8 +43,8 @@ export default function HomeScreen({
           >
             <div className="w-full h-full rounded-full overflow-hidden shadow-2xl bg-white">
               <Image
-                src="/images/dog.jpg"
-                alt="SIBAINUwo Logo"
+                src="/images/dogs/dog.jpg"
+                alt="SIBAINU Logo"
                 width={500}
                 height={500}
                 className="w-full h-full object-cover"
@@ -88,6 +89,20 @@ export default function HomeScreen({
           >
             🏆 レベル選択
           </button>
+          <button
+            onClick={onOpenDogDex}
+            className="w-4/5 mx-auto py-4 font-bold text-2xl text-white rounded-full relative overflow-hidden transition-transform hover:scale-105"
+            style={{
+              border: "4px solid transparent",
+              borderRadius: "3rem",
+              background:
+                "linear-gradient(90deg, #ff3366, #9933ff) padding-box, linear-gradient(90deg, #ffdd55 70%, #ff66cc, #9933ff) border-box",
+              boxShadow:
+                "0 0 15px rgba(255, 51, 102, 0.8), 0 0 30px rgba(255, 102, 204, 0.6), 0 0 50px rgba(153, 51, 255, 0.4)",
+            }}
+          >
+            図鑑を見る
+          </button>
         </div>
 
         {/* 成績パネル */}
@@ -109,6 +124,7 @@ export default function HomeScreen({
               <p className="text-sm opacity-80">達成率</p>
             </div>
           </div>
+
           {/* リセットボタン */}
           {completedLevels > 0 && (
             <div className="mt-6 pt-4 border-t border-white/20">
